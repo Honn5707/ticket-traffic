@@ -1,0 +1,5 @@
+### 1. 대기열 토큰 발급받기 (POST 요청)
+POST http://localhost:8080/api/queue/join
+
+### 2. 내 대기 순번 확인하기 (GET 요청)
+GET http://localhost:8080/api/queue/rank?token=b67a9be3-3201-4b88-8394-a75fc3c11cf7
