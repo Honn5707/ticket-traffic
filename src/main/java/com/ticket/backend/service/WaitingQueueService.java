@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class WaitingQueueService {
     private static final String ACTIVE_QUEUE_KEY = "active:queue";
 
     public String registerQueue(){
+
         //토큰생성
 
         String token = UUID.randomUUID().toString();
@@ -49,7 +51,8 @@ public class WaitingQueueService {
         if(tokens!=null&&!tokens.isEmpty()){
             for(String token: tokens){
                 //대기열 밖으로 빼기
-                redisTemplate.opsForSet().add(ACTIVE_QUEUE_KEY, token);
+                String activeKey = ACTIVE_QUEUE_KEY + ":" + token; // 예: active:queue:1234-abcd
+                redisTemplate.opsForValue().set(activeKey, "true", 10, TimeUnit.MINUTES);
 
                 //기다리는 줄에서 제거
                 redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY, token);
@@ -59,6 +62,7 @@ public class WaitingQueueService {
     }
 
     public boolean isAllowedToEnter(String token){
-        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ACTIVE_QUEUE_KEY, token));
+        String activeKey = ACTIVE_QUEUE_KEY + ":" + token;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(activeKey));
     }
 }

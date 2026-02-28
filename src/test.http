@@ -2,4 +2,4 @@
 POST http://localhost:8080/api/queue/join
 
 ### 2. 내 대기 순번 확인하기 (GET 요청)
-GET http://localhost:8080/api/queue/rank?token=b67a9be3-3201-4b88-8394-a75fc3c11cf7
+GET http://localhost:8080/api/queue/rank?token=b80d80c6-9bfe-488a-b241-13677dd44a70

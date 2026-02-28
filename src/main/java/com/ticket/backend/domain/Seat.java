@@ -1,5 +1,6 @@
 package com.ticket.backend.domain;
 
+import com.ticket.backend.exception.SeatAlreadyReservedException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class Seat {
 
     public void reserve(){
         if(this.isReserved){
-            throw  new IllegalArgumentException("이미 예약된 좌석입니다!");
+            throw new SeatAlreadyReservedException("이미 예약된 좌석입니다");
         }
         this.isReserved = true;
     }

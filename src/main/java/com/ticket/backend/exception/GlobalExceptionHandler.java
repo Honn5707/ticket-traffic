@@ -1,5 +1,6 @@
 package com.ticket.backend.exception; // 패키지명 확인!
 
+import com.ticket.backend.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
 
-@RestControllerAdvice // 📢 저는 이 구역의 민원 담당 매니저입니다!
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     //이미 예약된 좌석
     @ExceptionHandler(IllegalArgumentException.class)
@@ -22,6 +23,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleSoldOut(ObjectOptimisticLockingFailureException e){
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).
                 body("접속자가 많아 처리가 지연되고있슴다");
+    }
+
+    @ExceptionHandler(SeatAlreadyReservedException.class)
+    public ResponseEntity<Object> handleGeneralException(SeatAlreadyReservedException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
     // 그 외 예상치 못한 모든 에러 처리

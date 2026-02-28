@@ -1,8 +1,5 @@
-version: '3.8'
-
 services:
-  #1. 주방장 (maser DB)
-  mysql-maser:
+  mysql-master:
     image: mysql:8.0
     container_name: ticket-master
     ports:
@@ -10,15 +7,45 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ticket_db
-    volumes:
-      - ./mysql-master/my.cnf:/etc/mysql/my.cnf
-    #2. 홀 매니저(Slave DB)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      retries: 10
+
   mysql-slave:
-    image: mysql:9.0
+    image: mysql:8.0 # 8.0으로 통일하세요!
     container_name: ticket-slave
     ports:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - ./mysql-slave/my.cnf:/etc/mysql/my.cnf
+      MYSQL_DATABASE: ticket_db
+
+  redis:
+    image: redis:latest
+    container_name: ticket-redis
+    ports:
+      - "6379:6379"
+
+  ticket-backend:
+    build: .
+    container_name: ticket-app
+    restart: always
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-slave:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      # 자바 코드(@ConfigurationProperties)가 읽을 수 있는 정확한 이름들
+      - SPRING_DATASOURCE_MASTER_JDBC_URL=jdbc:mysql://mysql-master:3306/ticket_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_SLAVE_JDBC_URL=jdbc:mysql://mysql-slave:3306/ticket_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=ticket_db
+      # Hibernate 방언 명시 (Dialect 에러 방지)
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect

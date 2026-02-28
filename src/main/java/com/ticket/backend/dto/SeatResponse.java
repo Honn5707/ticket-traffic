@@ -16,10 +16,16 @@ public class SeatResponse implements Serializable{
 
 
     //엔티티를 DTO로
-    public  SeatResponse(Seat seat) {
+    public  SeatResponse (Seat seat) {
 
         this.id = seat.getId();
         this.seatNumber = seat.getSeatNumber();
         this.isReserved = seat.isReserved();
+    }
+
+    public static SeatResponse from(Seat seat) {
+        return new SeatResponse(
+                seat
+        );
     }
 }

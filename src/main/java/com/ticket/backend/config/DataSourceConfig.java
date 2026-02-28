@@ -47,7 +47,7 @@ public class DataSourceConfig {
         return routingDataSource;
     }
 
-    //4. 핵심- DB로 프록시를 등록
+    //4. DB로 프록시를 등록
     @Primary
     @Bean
     public DataSource dataSource (@Qualifier("routingDataSource") DataSource routingDataSource){

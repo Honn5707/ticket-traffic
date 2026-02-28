@@ -2,9 +2,11 @@ package com.ticket.backend.controller;
 
 import com.ticket.backend.domain.Seat;
 import com.ticket.backend.domain.SeatRepository;
+import com.ticket.backend.dto.ApiResponse;
 import com.ticket.backend.facade.RedisLockFacade;
 import com.ticket.backend.service.SeatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ticket.backend.dto.SeatResponse;
 import java.util.stream.Collectors;
@@ -21,16 +23,18 @@ public class SeatController {
     private final SeatService seatService;
     private final RedisLockFacade redisLockFacade;
     private final WaitingQueueService waitingQueueService;
-    @Cacheable(cacheNames = "seatsList") // redis에 복사
+
+
     @GetMapping
-    public List<SeatResponse> getAllSeats() {
-        // 1. 서비스에서 모든 좌석 엔티티를 가져옵니다.
-        // 2. .stream()을 이용해 SeatResponse(DTO)로 옷을 갈아입힙니다.
-        System.out.println("🐌 무거운 DB에서 좌석 목록을 열심히 꺼내오는 중...");
-        return seatService.findAll().stream()
-                .map(SeatResponse::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<SeatResponse>> getSeats() {
+
+        return ResponseEntity.ok(seatService.findAll());
     }
+//        System.out.println("🐌 무거운 DB에서 좌석 목록을 열심히 꺼내오는 중...");
+//        return seatService.findAll().stream()
+//                .map(SeatResponse::new)
+//                .collect(Collectors.toList());
+//    }f
     @GetMapping("/{seatId}/reserve")
     public String reserveSeat(@PathVariable Long seatId, @RequestParam String token) {
 

@@ -2,7 +2,9 @@ package com.ticket.backend.service;
 
 import com.ticket.backend.domain.Seat;
 import com.ticket.backend.domain.SeatRepository;
+import com.ticket.backend.dto.SeatResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,11 +13,19 @@ import java.util.Collection;
 import java.util.List;
 
 @Service// 1.나는 비지니스 로직을 담당하는 주방장이야!
+
 @RequiredArgsConstructor
 public class SeatService {
-    @Transactional(readOnly = true)
-    public List<Seat> findAll() { return seatRepository.findAll(); }
     private final SeatRepository seatRepository;
+    @Cacheable(cacheNames = "seatsList")
+    @Transactional(readOnly = true)
+    public List<SeatResponse> findAll() {
+        // DB(Slave)에서 조회한 엔티티를 DTO로 변환하여 반환
+        return seatRepository.findAll().stream()
+                .map(SeatResponse::from)
+                .toList();
+    }
+
 
 
     @Transactional() // 2.이 안의 과정은 하나로 묶여야해!
